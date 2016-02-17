@@ -1,0 +1,27 @@
+PODS:
+  - Alamofire (2.0.2)
+  - JSQMessagesViewController (7.2.0):
+    - JSQSystemSoundPlayer (~> 2.0.1)
+  - JSQSystemSoundPlayer (2.0.1)
+  - MTDataAPI-SDK (1.0.8):
+    - Alamofire (~> 2.0)
+    - SwiftyJSON
+  - SDWebImage (3.7.5):
+    - SDWebImage/Core (= 3.7.5)
+  - SDWebImage/Core (3.7.5)
+  - SwiftyJSON (2.3.2)
+
+DEPENDENCIES:
+  - JSQMessagesViewController
+  - MTDataAPI-SDK
+  - SDWebImage
+
+SPEC CHECKSUMS:
+  Alamofire: 8edbab00802a752bb5240cc2abe70e7e881488ad
+  JSQMessagesViewController: 73cab48aa92fc2d512f3b6724f3425cc47a19eb5
+  JSQSystemSoundPlayer: c5850e77a4363ffd374cd851154b9af93264ed8d
+  MTDataAPI-SDK: 1817d42ecb3b40bf278569e15ea019bc6d700313
+  SDWebImage: 69c6303e3348fba97e03f65d65d4fbc26740f461
+  SwiftyJSON: 04ccea08915aa0109039157c7974cf0298da292a
+
+COCOAPODS: 0.39.0

@@ -1,0 +1,6 @@
+framework module MTDataAPI_SDK {
+  umbrella header "MTDataAPI-SDK-umbrella.h"
+
+  export *
+  module * { export * }
+}
