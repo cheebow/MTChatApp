@@ -20,12 +20,12 @@ class ViewController: JSQMessagesViewController {
     
     let api = DataAPI.sharedInstance
     
-    let ENDPOINT    = "http://localhost/cgi-bin/MT-6.1/mt-data-api.cgi"
+    let ENDPOINT    = "http://localhost/cgi-bin/MT/mt-data-api.cgi"
     let USERNAME    = "hoge"
     let PASSWORD    = "mogemoge"
-    let SITE_ID     = "2"
-    let ENTRY_ID    = "388"
-    let SENDER_ID   = "3"
+    let SITE_ID     = "1"
+    let ENTRY_ID    = "3"
+    let SENDER_ID   = "2"
     let SENDER_NAME = "HOGE"
     
     override func viewDidLoad() {
@@ -33,22 +33,22 @@ class ViewController: JSQMessagesViewController {
         
         api.APIBaseURL = ENDPOINT
 
-        self.inputToolbar?.contentView?.leftBarButtonItem = nil
+        inputToolbar?.contentView?.leftBarButtonItem = nil
         
-        self.senderId = SENDER_ID
-        self.senderDisplayName = SENDER_NAME
+        senderId = SENDER_ID
+        senderDisplayName = SENDER_NAME
         
         let bubbleFactory = JSQMessagesBubbleImageFactory()
-        self.incomingBubble = bubbleFactory.incomingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleLightGrayColor())
-        self.outgoingBubble = bubbleFactory.outgoingMessagesBubbleImageWithColor(UIColor.jsq_messageBubbleGreenColor())
+        incomingBubble = bubbleFactory?.incomingMessagesBubbleImage(with: UIColor.jsq_messageBubbleBlue())
+        outgoingBubble = bubbleFactory?.outgoingMessagesBubbleImage(with: UIColor.jsq_messageBubbleGreen())
         
-        self.messages = []
-        self.avatars = [String: JSQMessagesAvatarImage]()
+        messages = []
+        avatars = [String: JSQMessagesAvatarImage]()
      
-        self.receiveMessage()
-        NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: "receiveMessage", userInfo: nil, repeats: true)
+        receiveMessage()
+        Timer.scheduledTimer(timeInterval: 3.0, target: self, selector: #selector(ViewController.receiveMessage), userInfo: nil, repeats: true)
         
-        self.inputToolbar?.contentView?.textView?.becomeFirstResponder()
+        inputToolbar?.contentView?.textView?.becomeFirstResponder()
     }
     
     override func didReceiveMemoryWarning() {
@@ -56,85 +56,85 @@ class ViewController: JSQMessagesViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    override func didPressSendButton(button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: NSDate!) {
+    override func didPressSend(_ button: UIButton!, withMessageText text: String!, senderId: String!, senderDisplayName: String!, date: Date!) {
         
         var comment = [String:String]()
         comment["body"] = text
 
-        self.inputToolbar?.contentView?.rightBarButtonItem?.enabled = false
+        inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = false
         
-        self.api.authentication(USERNAME, password: PASSWORD, remember: true,
+        api.authentication(USERNAME, password: PASSWORD, remember: true,
             success:{_ in
                 self.api.createCommentForEntry(
                     siteID: self.SITE_ID,
                     entryID: self.ENTRY_ID,
                     comment: comment,
                     
-                    success: {(result: JSON!)-> Void in
-                        self.inputToolbar?.contentView?.rightBarButtonItem?.enabled = true
-                        self.finishSendingMessageAnimated(true)
+                    success: {(result: JSON?)-> Void in
+                        self.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
+                        self.finishSendingMessage(animated: true)
                         self.receiveMessage()
                     },
-                    failure: {(error: JSON!)-> Void in
-                        self.inputToolbar?.contentView?.rightBarButtonItem?.enabled = true
+                    failure: {(error: JSON?)-> Void in
+                        self.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
                     }
                 )
             },
-            failure: {(error: JSON!)-> Void in
-                self.inputToolbar?.contentView?.rightBarButtonItem?.enabled = true
+            failure: {(error: JSON?)-> Void in
+                self.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
             }
         )
     }
     
-    override func collectionView(collectionView: JSQMessagesCollectionView!, messageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageData! {
-        return self.messages?[indexPath.item]
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageDataForItemAt indexPath: IndexPath!) -> JSQMessageData! {
+        return messages?[indexPath.item]
     }
     
-    override func collectionView(collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageBubbleImageDataSource! {
-        let message = self.messages?[indexPath.item]
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, messageBubbleImageDataForItemAt indexPath: IndexPath!) -> JSQMessageBubbleImageDataSource! {
+        let message = messages?[indexPath.item]
         if message?.senderId == self.senderId {
             return self.outgoingBubble
         }
         return self.incomingBubble
     }
     
-    override func collectionView(collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAtIndexPath indexPath: NSIndexPath!) -> JSQMessageAvatarImageDataSource! {
-        if let message = self.messages?[indexPath.item] {
-            return self.avatars?[message.senderId]
+    override func collectionView(_ collectionView: JSQMessagesCollectionView!, avatarImageDataForItemAt indexPath: IndexPath!) -> JSQMessageAvatarImageDataSource! {
+        if let message = messages?[indexPath.item] {
+            return avatars?[message.senderId]
         }
         
         return JSQMessagesAvatarImage(placeholder: UIImage())
     }
     
-    override func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return (self.messages?.count)!
     }
     
-    private func messagesFromJSON(items: [JSON]) {
-        self.messages?.removeAll()
+    fileprivate func messagesFromJSON(_ items: [JSON]) {
+        messages?.removeAll()
         for item in items {
             let author = item["author"]
             let id = author["id"].stringValue
             let name = author["displayName"].stringValue
             let text = item["body"].stringValue
             let message = JSQMessage(senderId: id, displayName: name, text: text)
-            self.messages?.append(message)
+            messages?.append(message!)
             
-            if self.avatars?[id] == nil {
-                if let endpointUrl = NSURL(string: self.ENDPOINT) {
+            if avatars?[id] == nil {
+                if let endpointUrl = NSURL(string: ENDPOINT) {
                     let scheme = endpointUrl.scheme
                     let host = endpointUrl.host!
-                    let pictUrl = scheme + "://" + host + author["userpicUrl"].stringValue
+                    let pictUrl = scheme! + "://" + host + author["userpicUrl"].stringValue
                     let avatar = JSQMessagesAvatarImage(placeholder: UIImage())
-                    SDWebImageDownloader.sharedDownloader().downloadImageWithURL(NSURL(string: pictUrl), options: .UseNSURLCache, progress: nil, completed: {(image, data, error, finished) in
-                        avatar.avatarImage = JSQMessagesAvatarImageFactory.circularAvatarHighlightedImage(image, withDiameter: 64)
+                    SDWebImageDownloader.shared().downloadImage(with: NSURL(string: pictUrl) as URL!, options: .useNSURLCache, progress: nil, completed: {(image, data, error, finished) in
+                        avatar?.avatarImage = JSQMessagesAvatarImageFactory.circularAvatarHighlightedImage(image, withDiameter: 64)
                     })
-                    self.avatars?[id] = avatar
+                    avatars?[id] = avatar
                 }
             }
         }
-        self.messages = self.messages?.reverse()
-        self.finishReceivingMessageAnimated(true)
+        messages = messages?.reversed()
+        finishReceivingMessage(animated: true)
     }
     
     func receiveMessage() {
@@ -144,21 +144,22 @@ class ViewController: JSQMessagesViewController {
             "fields":"author,body"
         ]
 
-        self.api.authentication(USERNAME, password: PASSWORD, remember: true,
+        api.authentication(USERNAME, password: PASSWORD, remember: true,
             success:{_ in
                 self.api.listCommentsForEntry(
                     siteID: self.SITE_ID,
                     entryID: self.ENTRY_ID,
                     options: options,
                     
-                    success: {(items:[JSON]!, total:Int!)-> Void in
+                    success: {(items:[JSON]?, total:Int?)-> Void in
+                        guard let items = items else { return }
                         self.messagesFromJSON(items)
                     },
-                    failure: {(error: JSON!)-> Void in
+                    failure: {(error: JSON?)-> Void in
                     }
                 )
             },
-            failure: {(error: JSON!)-> Void in
+            failure: {(error: JSON?)-> Void in
             }
         )
     }
