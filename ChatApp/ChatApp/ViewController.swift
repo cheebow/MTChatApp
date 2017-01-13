@@ -62,21 +62,22 @@ class ViewController: JSQMessagesViewController {
         comment["body"] = text
 
         inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = false
-        
+
         api.authentication(USERNAME, password: PASSWORD, remember: true,
-            success:{_ in
-                self.api.createCommentForEntry(
-                    siteID: self.SITE_ID,
-                    entryID: self.ENTRY_ID,
+            success:{ [weak self] _ in
+                guard let me = self else { return }
+                me.api.createCommentForEntry(
+                    siteID: me.SITE_ID,
+                    entryID: me.ENTRY_ID,
                     comment: comment,
                     
                     success: {(result: JSON?)-> Void in
-                        self.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
-                        self.finishSendingMessage(animated: true)
-                        self.receiveMessage()
+                        me.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
+                        me.finishSendingMessage(animated: true)
+                        me.receiveMessage()
                     },
                     failure: {(error: JSON?)-> Void in
-                        self.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
+                        me.inputToolbar?.contentView?.rightBarButtonItem?.isEnabled = true
                     }
                 )
             },
@@ -145,15 +146,16 @@ class ViewController: JSQMessagesViewController {
         ]
 
         api.authentication(USERNAME, password: PASSWORD, remember: true,
-            success:{_ in
-                self.api.listCommentsForEntry(
-                    siteID: self.SITE_ID,
-                    entryID: self.ENTRY_ID,
+            success:{ [weak self] _ in
+                guard let me = self else { return }
+                me.api.listCommentsForEntry(
+                    siteID: me.SITE_ID,
+                    entryID: me.ENTRY_ID,
                     options: options,
                     
                     success: {(items:[JSON]?, total:Int?)-> Void in
                         guard let items = items else { return }
-                        self.messagesFromJSON(items)
+                        me.messagesFromJSON(items)
                     },
                     failure: {(error: JSON?)-> Void in
                     }
